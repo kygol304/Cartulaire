@@ -80,7 +80,7 @@ import fr.cartulaire.vm.MapViewModel
 fun MapScreen(vm: MapViewModel = viewModel()) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var legendOpen by remember { mutableStateOf(true) }
+    var legendOpen by remember { mutableStateOf(false) }
     val permission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result ->
@@ -110,9 +110,9 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
                 vm.select(site)
             },
             onCameraConsumed = vm::consumeCamera,
-            showCities = state.showCities && state.level != ExploreLevel.DEPARTMENT,
-            showPeople = state.showPeople && state.level == ExploreLevel.KINGDOM,
-            showMacabre = state.showMacabre && state.level == ExploreLevel.KINGDOM,
+            showCities = state.showCities,
+            showPeople = state.showPeople,
+            showMacabre = state.showMacabre,
             level = state.level,
             regionCode = state.region?.code,
             deptCode = state.department?.code,

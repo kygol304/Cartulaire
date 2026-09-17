@@ -17,6 +17,20 @@ object IlluminatedPlaces {
     const val ICON_SKELETON = "illum_skeleton"
     const val ICON_DEATH = "illum_death"
     const val ICON_KNIGHT = "illum_knight"
+    const val ICON_MILL = "illum_mill"
+    const val ICON_TIMBER = "illum_timber"
+    const val ICON_PORT = "illum_port"
+    const val ICON_BOAR = "illum_boar"
+    const val ICON_SHIP = "illum_ship"
+
+    private val SETTLEMENT_ICONS = listOf(
+        ICON_WALL, ICON_RIVER, ICON_VILLAGE, ICON_ABBEY, ICON_MILL, ICON_TIMBER, ICON_PORT,
+    )
+
+    fun settlementIcon(name: String): String {
+        val idx = kotlin.math.abs(name.hashCode()) % SETTLEMENT_ICONS.size
+        return SETTLEMENT_ICONS[idx]
+    }
 
     val cities: List<CityIllum> = listOf(
         CityIllum("Le Mans", 48.0077, 0.1981, ICON_WALL),
@@ -101,6 +115,12 @@ object IlluminatedPlaces {
         CityIllum("chasse", 44.8, 1.4, ICON_MARGIN),
         CityIllum("chasse", 48.7, -0.8, ICON_MARGIN),
         CityIllum("chasse", 45.5, 5.5, ICON_MARGIN),
+        CityIllum("sanglier", 46.4, 3.2, ICON_BOAR),
+        CityIllum("sanglier", 44.1, 3.8, ICON_BOAR),
+        CityIllum("sanglier", 48.2, 5.1, ICON_BOAR),
+        CityIllum("nef", 47.4, -2.8, ICON_SHIP),
+        CityIllum("nef", 43.4, 5.0, ICON_SHIP),
+        CityIllum("nef", 49.4, -0.1, ICON_SHIP),
     )
 
     val macabre: List<CityIllum> = listOf(

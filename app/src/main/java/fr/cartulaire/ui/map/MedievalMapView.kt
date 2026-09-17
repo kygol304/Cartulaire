@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.gson.JsonObject
 import fr.cartulaire.R
+import fr.cartulaire.data.CityIllum
 import fr.cartulaire.data.ExploreLevel
 import fr.cartulaire.data.HeritageSite
 import fr.cartulaire.data.IlluminatedPlaces
@@ -94,15 +95,32 @@ class MapFacade {
         source.setGeoJson(FeatureCollection.fromFeatures(arrayOf(Feature.fromGeometry(line))))
     }
 
-    fun setDecor(showCities: Boolean, showPeople: Boolean, showMacabre: Boolean) {
+    fun setDecor(
+        showCities: Boolean,
+        showPeople: Boolean,
+        showMacabre: Boolean,
+        sites: List<HeritageSite> = emptyList(),
+    ) {
         val style = map?.style ?: return
         val source = style.getSource(SOURCE_ILLUM) as? GeoJsonSource ?: return
         val items = buildList {
-            if (showCities) addAll(IlluminatedPlaces.cities)
+            if (showCities) {
+                addAll(IlluminatedPlaces.cities)
+                sites.filter { it.kind == SiteKind.VILLAGE }.forEach { village ->
+                    add(
+                        CityIllum(
+                            village.name,
+                            village.lat,
+                            village.lon,
+                            IlluminatedPlaces.settlementIcon(village.name),
+                        ),
+                    )
+                }
+            }
             if (showPeople) addAll(IlluminatedPlaces.people)
             if (showMacabre) addAll(IlluminatedPlaces.macabre)
         }
-        val features = items.map { city ->
+        val features = items.distinctBy { "${it.lat}-${it.lon}" }.map { city ->
             val props = JsonObject()
             props.addProperty("illum", city.icon)
             props.addProperty("name", city.name)
@@ -280,7 +298,12 @@ fun MedievalMapView(
                         facade.setSites(listeners.sites)
                         facade.setUser(listeners.user)
                         facade.setRoute(listeners.route)
-                        facade.setDecor(listeners.showCities, listeners.showPeople, listeners.showMacabre)
+                        facade.setDecor(
+                            listeners.showCities,
+                            listeners.showPeople,
+                            listeners.showMacabre,
+                            listeners.sites,
+                        )
                         facade.setLevel(listeners.level, null, null)
                         emitBounds(map, listeners)
                     }
@@ -346,8 +369,8 @@ fun MedievalMapView(
     LaunchedEffect(sites) { facade.setSites(sites) }
     LaunchedEffect(user) { facade.setUser(user) }
     LaunchedEffect(route) { facade.setRoute(route) }
-    LaunchedEffect(showCities, showPeople, showMacabre) {
-        facade.setDecor(showCities, showPeople, showMacabre)
+    LaunchedEffect(showCities, showPeople, showMacabre, sites) {
+        facade.setDecor(showCities, showPeople, showMacabre, sites)
     }
     LaunchedEffect(level, regionCode, deptCode) {
         facade.setLevel(level, regionCode, deptCode)
@@ -398,6 +421,11 @@ private fun addImages(style: Style, resources: android.content.res.Resources) {
     style.addImage(IlluminatedPlaces.ICON_SKELETON, decode(resources, R.drawable.illum_skeleton))
     style.addImage(IlluminatedPlaces.ICON_DEATH, decode(resources, R.drawable.illum_death))
     style.addImage(IlluminatedPlaces.ICON_KNIGHT, decode(resources, R.drawable.illum_knight))
+    style.addImage(IlluminatedPlaces.ICON_MILL, decode(resources, R.drawable.illum_mill))
+    style.addImage(IlluminatedPlaces.ICON_TIMBER, decode(resources, R.drawable.illum_timber))
+    style.addImage(IlluminatedPlaces.ICON_PORT, decode(resources, R.drawable.illum_port))
+    style.addImage(IlluminatedPlaces.ICON_BOAR, decode(resources, R.drawable.illum_boar))
+    style.addImage(IlluminatedPlaces.ICON_SHIP, decode(resources, R.drawable.illum_ship))
 }
 
 private fun installAdmin(style: Style, context: android.content.Context) {
@@ -503,14 +531,16 @@ private fun installIlluminations(style: Style) {
                     Expression.interpolate(
                         Expression.linear(),
                         Expression.zoom(),
-                        Expression.literal(4),
-                        Expression.literal(0.38),
-                        Expression.literal(7),
-                        Expression.literal(0.72),
-                        Expression.literal(10),
-                        Expression.literal(0.55),
-                        Expression.literal(12),
-                        Expression.literal(0.18),
+                        Expression.literal(5),
+                        Expression.literal(0.28),
+                        Expression.literal(8),
+                        Expression.literal(0.42),
+                        Expression.literal(11),
+                        Expression.literal(0.34),
+                        Expression.literal(14),
+                        Expression.literal(0.26),
+                        Expression.literal(16),
+                        Expression.literal(0.20),
                     ),
                 ),
                 PropertyFactory.iconOpacity(
@@ -518,16 +548,17 @@ private fun installIlluminations(style: Style) {
                         Expression.linear(),
                         Expression.zoom(),
                         Expression.literal(4),
-                        Expression.literal(0.95),
-                        Expression.literal(10.5),
-                        Expression.literal(0.85),
-                        Expression.literal(12.2),
-                        Expression.literal(0.0),
+                        Expression.literal(0.88),
+                        Expression.literal(12),
+                        Expression.literal(0.82),
+                        Expression.literal(15),
+                        Expression.literal(0.70),
                     ),
                 ),
                 PropertyFactory.iconAllowOverlap(true),
                 PropertyFactory.iconIgnorePlacement(true),
-                PropertyFactory.iconAnchor(Property.ICON_ANCHOR_CENTER),
+                PropertyFactory.iconAnchor(Property.ICON_ANCHOR_BOTTOM),
+                PropertyFactory.iconOffset(arrayOf(0f, -6f)),
             ),
         MapFacade.LAYER_POI,
     )
