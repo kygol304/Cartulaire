@@ -161,22 +161,37 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
         ) {
             ParchmentPanel(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Image(
                             painterResource(R.drawable.logo_emblem),
                             contentDescription = "Cartulaire",
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(36.dp)
                                 .clip(RoundedCornerShape(6.dp)),
                             contentScale = ContentScale.Crop,
                         )
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text(
                             "CARTULAIRE",
                             fontFamily = CinzelFamily,
                             color = Oxblood,
-                            fontSize = 20.sp,
-                            letterSpacing = 3.sp,
+                            fontSize = 18.sp,
+                            letterSpacing = 2.sp,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            if (legendOpen) "FERMER" else "MENU",
+                            fontFamily = CinzelFamily,
+                            color = Oxblood,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp,
+                            modifier = Modifier
+                                .border(1.dp, Gold, RoundedCornerShape(4.dp))
+                                .clickable { legendOpen = !legendOpen }
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
                         )
                     }
                     Breadcrumb(
@@ -222,67 +237,15 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
                     }
                 }
             }
-            if (!state.banner.isNullOrBlank() || state.loading) {
-                Spacer(Modifier.height(8.dp))
-                ParchmentPanel(Modifier.fillMaxWidth()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (state.loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = Oxblood,
-                                strokeWidth = 2.dp,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        Text(
-                            state.banner ?: "Enluminure…",
-                            fontFamily = CormorantFamily,
-                            color = Ink,
-                            fontSize = 14.sp,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
-        }
-
-        Column(
-            Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(top = 118.dp, end = 10.dp)
-                .width(220.dp),
-        ) {
             if (legendOpen) {
+                Spacer(Modifier.height(8.dp))
                 ParchmentPanel(Modifier.fillMaxWidth()) {
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 420.dp)
+                            .heightIn(max = 280.dp)
                             .verticalScroll(rememberScrollState()),
                     ) {
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                "MENU",
-                                fontFamily = CinzelFamily,
-                                color = Oxblood,
-                                fontSize = 15.sp,
-                                letterSpacing = 2.sp,
-                            )
-                            Text(
-                                "fermer",
-                                fontFamily = CormorantFamily,
-                                color = Oxblood,
-                                modifier = Modifier.clickable { legendOpen = false },
-                            )
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        GoldRule(Modifier.fillMaxWidth().height(1.dp))
-                        Spacer(Modifier.height(8.dp))
                         when (state.level) {
                             ExploreLevel.KINGDOM -> {
                                 Text("Provinces", fontFamily = CinzelFamily, color = Ink, fontSize = 12.sp)
@@ -294,7 +257,10 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
                                         fontSize = 16.sp,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clickable { vm.selectRegion(area.code, area.name) }
+                                            .clickable {
+                                                vm.selectRegion(area.code, area.name)
+                                                legendOpen = false
+                                            }
                                             .padding(vertical = 4.dp),
                                     )
                                 }
@@ -309,7 +275,10 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
                                         fontSize = 16.sp,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clickable { vm.selectDepartment(area.code, area.name) }
+                                            .clickable {
+                                                vm.selectDepartment(area.code, area.name)
+                                                legendOpen = false
+                                            }
                                             .padding(vertical = 4.dp),
                                     )
                                 }
@@ -332,16 +301,28 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
                         LegendToggle("Danse macabre", state.showMacabre, vm::toggleMacabre)
                     }
                 }
-            } else {
-                ParchmentPanel(Modifier.clickable { legendOpen = true }.fillMaxWidth()) {
-                    Text(
-                        "MENU",
-                        fontFamily = CinzelFamily,
-                        color = Oxblood,
-                        fontSize = 16.sp,
-                        letterSpacing = 3.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                    )
+            }
+            if (!state.banner.isNullOrBlank() || state.loading) {
+                Spacer(Modifier.height(8.dp))
+                ParchmentPanel(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (state.loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Oxblood,
+                                strokeWidth = 2.dp,
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(
+                            state.banner ?: "Enluminure…",
+                            fontFamily = CormorantFamily,
+                            color = Ink,
+                            fontSize = 14.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }

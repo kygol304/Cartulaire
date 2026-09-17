@@ -12,8 +12,8 @@ android {
         applicationId = "fr.cartulaire.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.0.5"
+        versionCode = 8
+        versionName = "1.0.6"
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
         }
