@@ -161,13 +161,24 @@ fun MapScreen(vm: MapViewModel = viewModel()) {
         ) {
             ParchmentPanel(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
-                    Text(
-                        "CARTULAIRE",
-                        fontFamily = CinzelFamily,
-                        color = Oxblood,
-                        fontSize = 20.sp,
-                        letterSpacing = 3.sp,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painterResource(R.drawable.logo_emblem),
+                            contentDescription = "Cartulaire",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(6.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            "CARTULAIRE",
+                            fontFamily = CinzelFamily,
+                            color = Oxblood,
+                            fontSize = 20.sp,
+                            letterSpacing = 3.sp,
+                        )
+                    }
                     Breadcrumb(
                         level = state.level,
                         region = state.region?.name,
