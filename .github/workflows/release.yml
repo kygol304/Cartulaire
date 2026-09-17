@@ -18,14 +18,18 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build APK
+      - name: Fix Gradle wrapper
         run: |
+          sed -i 's/\r$//' gradlew
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+
+      - name: Build APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
