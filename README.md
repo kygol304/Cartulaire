@@ -37,53 +37,6 @@ L’APK se trouve dans `app\build\outputs\apk\debug\`.
 
 Plus besoin de copier l’APK à la main. Chaque tag `v…` construit l’APK et crée une **Release** GitHub.
 
-### 1. Créer le dépôt
-
-1. Va sur [https://github.com/new](https://github.com/new)
-2. Nom : `Cartulaire` (ou autre)
-3. **Public** (nécessaire pour Obtainium / F-Droid plus tard)
-4. Ne coche pas “Add a README” (le projet en a déjà un)
-5. Crée le dépôt, copie l’URL `https://github.com/TON-COMPTE/Cartulaire.git`
-
-Dans PowerShell, depuis ce dossier :
-
-```bat
-cd C:\Users\technicien\Documents\grok\Cartulaire
-git init
-git add .
-git commit -m "Première version de Cartulaire"
-git branch -M main
-git remote add origin https://github.com/TON-COMPTE/Cartulaire.git
-git push -u origin main
-```
-
-GitHub demandera de te connecter (navigateur ou jeton).
-
-### 2. Publier une mise à jour
-
-À chaque fois que tu veux envoyer une nouvelle APK au téléphone :
-
-1. Monte `versionCode` et `versionName` dans `app/build.gradle.kts` (ex. `3` et `"1.0.1"`)
-2. Puis :
-
-```bat
-git add -A
-git commit -m "Corrige le menu et le clic sur les provinces"
-git tag v1.0.1
-git push origin main
-git push origin v1.0.1
-```
-
-GitHub Actions compile l’APK (~3–5 min). La release apparaît ici :
-
-`https://github.com/TON-COMPTE/Cartulaire/releases`
-
-### 3. Sur le téléphone (Obtainium)
-
-1. Installe [Obtainium](https://github.com/ImranR98/Obtainium/releases) (ou via F-Droid)
-2. **Ajouter une appli** → colle l’URL du dépôt GitHub
-3. Obtainium trouve Cartulaire et propose **Installer** / **Mettre à jour** à chaque nouvelle release
-
 ## Données
 
 | Couche | Source OSM |
