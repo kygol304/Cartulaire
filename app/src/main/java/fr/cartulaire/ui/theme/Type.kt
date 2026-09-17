@@ -12,13 +12,9 @@ val CinzelFamily = FontFamily(
     Font(R.font.cinzel_decorative_bold, FontWeight.Bold),
 )
 
-val CormorantFamily = FontFamily(
-    Font(R.font.cormorant_garamond_regular, FontWeight.Normal),
-)
+val CormorantFamily = FontFamily.Serif
 
-val BlackletterFamily = FontFamily(
-    Font(R.font.unifraktur_cook, FontWeight.Bold),
-)
+val BlackletterFamily = CinzelFamily
 
 val CartulaireTypography = Typography(
     displayLarge = TextStyle(

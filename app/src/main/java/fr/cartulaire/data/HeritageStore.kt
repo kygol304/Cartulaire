@@ -76,7 +76,7 @@ class HeritageStore(private val context: Context) {
         }
     }.getOrNull()
 
-    fun allRegions(): List<AdminArea> {
+    fun allRegions(): List<AdminArea> = runCatching {
         val out = ArrayList<AdminArea>()
         db.rawQuery(
             "SELECT code, name, south, west, north, east FROM regions ORDER BY name",
@@ -89,10 +89,10 @@ class HeritageStore(private val context: Context) {
                 )
             }
         }
-        return out
-    }
+        out
+    }.getOrDefault(emptyList())
 
-    fun departmentsOf(region: String): List<AdminArea> {
+    fun departmentsOf(region: String): List<AdminArea> = runCatching {
         val out = ArrayList<AdminArea>()
         db.rawQuery(
             "SELECT code, name, region, south, west, north, east FROM departments WHERE region = ? ORDER BY name",
@@ -105,8 +105,8 @@ class HeritageStore(private val context: Context) {
                 )
             }
         }
-        return out
-    }
+        out
+    }.getOrDefault(emptyList())
 
     fun count(): Int {
         db.rawQuery("SELECT COUNT(*) FROM sites", null).use { cursor ->
@@ -206,34 +206,37 @@ class HeritageStore(private val context: Context) {
     private fun open(): SQLiteDatabase {
         val file = context.getDatabasePath("heritage.db")
         file.parentFile?.mkdirs()
-        val assetBytes = runCatching { context.assets.openFd("heritage.db").length }.getOrDefault(-1L)
-        val shouldCopy = assetBytes > 0 && (!file.exists() || file.length() < assetBytes)
-        if (shouldCopy) {
-            runCatching {
-                context.assets.open("heritage.db").use { input ->
-                    FileOutputStream(file).use { input.copyTo(it) }
-                }
-            }
+        val usable = file.exists() && file.length() > 1_000_000L && hasRegionsTable(file)
+        if (!usable) {
+            runCatching { copyAssetDb(file) }
         }
-        if (!file.exists()) {
+        if (!file.exists() || file.length() == 0L) {
             SQLiteDatabase.openOrCreateDatabase(file, null).use { empty ->
                 empty.execSQL(CREATE_SQL)
             }
         }
-        val opened = SQLiteDatabase.openDatabase(file.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
-        val hasRegions = opened.rawQuery(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='regions'",
-            null,
-        ).use { it.moveToFirst() }
-        if (!hasRegions && assetBytes > 0) {
-            opened.close()
-            file.delete()
-            context.assets.open("heritage.db").use { input ->
-                FileOutputStream(file).use { input.copyTo(it) }
-            }
-            return SQLiteDatabase.openDatabase(file.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
+        return SQLiteDatabase.openDatabase(file.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
+    }
+
+    private fun hasRegionsTable(file: java.io.File): Boolean = runCatching {
+        SQLiteDatabase.openDatabase(file.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+            db.rawQuery(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='regions'",
+                null,
+            ).use { it.moveToFirst() }
         }
-        return opened
+    }.getOrDefault(false)
+
+    private fun copyAssetDb(file: java.io.File) {
+        val tmp = java.io.File(file.parentFile, "heritage.copying.db")
+        context.assets.open("heritage.db").use { input ->
+            FileOutputStream(tmp).use { output -> input.copyTo(output) }
+        }
+        if (file.exists()) file.delete()
+        if (!tmp.renameTo(file)) {
+            tmp.copyTo(file, overwrite = true)
+            tmp.delete()
+        }
     }
 
     companion object {

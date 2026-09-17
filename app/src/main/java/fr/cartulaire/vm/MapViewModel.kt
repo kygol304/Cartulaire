@@ -49,15 +49,15 @@ data class MapUiState(
 )
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
-    private val store = HeritageStore(application)
+    private val store = runCatching { HeritageStore(application) }.getOrNull()
     private val routes = RouteRepository()
     private val location = LocationRepository(application)
 
     private val _state = MutableStateFlow(
         MapUiState(
-            catalogCount = store.count(),
+            catalogCount = store?.count() ?: 0,
             banner = "Choisissez une province dans le menu",
-            regionChoices = store.allRegions(),
+            regionChoices = store?.allRegions().orEmpty(),
         ),
     )
     val state: StateFlow<MapUiState> = _state.asStateFlow()
@@ -107,7 +107,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectRegion(code: String, name: String) {
-        val area = store.region(code.trim()) ?: return
+        val area = store?.region(code.trim()) ?: return
         _state.update {
             it.copy(
                 level = ExploreLevel.REGION,
@@ -118,14 +118,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 cameraBounds = area.bounds(7.0),
                 banner = "Choisissez un département de ${area.name}",
                 visibleCount = 0,
-                departmentChoices = store.departmentsOf(area.code),
+                departmentChoices = store?.departmentsOf(area.code).orEmpty(),
             )
         }
     }
 
     fun selectDepartment(code: String, name: String) {
-        val area = store.department(code) ?: return
-        val region = area.parent?.let { store.region(it) } ?: _state.value.region
+        val area = store?.department(code) ?: return
+        val region = area.parent?.let { store?.region(it) } ?: _state.value.region
         _state.update {
             it.copy(
                 level = ExploreLevel.DEPARTMENT,
@@ -156,7 +156,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                         cameraBounds = region?.bounds(7.0),
                         banner = "Choisissez un département de ${region?.name ?: "la province"}",
                         visibleCount = 0,
-                        departmentChoices = region?.code?.let { store.departmentsOf(it) } ?: emptyList(),
+                        departmentChoices = region?.code?.let { store?.departmentsOf(it) }.orEmpty(),
                     )
                 }
             }
@@ -173,7 +173,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                         cameraBounds = null,
                         banner = "Choisissez une province dans le menu",
                         departmentChoices = emptyList(),
-                        regionChoices = store.allRegions(),
+                        regionChoices = store?.allRegions().orEmpty(),
                         visibleCount = 0,
                     )
                 }
@@ -238,8 +238,8 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         val dept = s.department?.code ?: return
-        val local = store.query(bounds, s.kinds, dept).filter { it.matches(s.search) }
-        val counts = store.countInDept(dept, s.kinds)
+        val local = store?.query(bounds, s.kinds, dept).orEmpty().filter { it.matches(s.search) }
+        val counts = store?.countInDept(dept, s.kinds).orEmpty()
         val summary = SiteKind.entries
             .mapNotNull { kind -> counts[kind]?.let { n -> "$n ${kind.label.lowercase()}" } }
             .joinToString(" · ")
@@ -258,7 +258,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                 zoom = bounds.zoom,
                 cityIllum = city,
                 visibleCount = local.size,
-                catalogCount = store.count(),
+                catalogCount = store?.count() ?: 0,
                 banner = if (summary.isBlank()) {
                     "Nul lieu de ce type en ${s.department?.name}."
                 } else {
